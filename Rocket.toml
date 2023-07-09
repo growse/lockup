@@ -1,0 +1,3 @@
+
+[default.databases.thingsdb]
+url = "sqlite://db/lockup.sqlite"
