@@ -1,0 +1,3 @@
+
+[default.databases.sqlx]
+url = "db/sqlx/lockup.sqlite"
