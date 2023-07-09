@@ -1,4 +1,4 @@
-FROM rust:1.70-bookworm as builder
+FROM rust:1.71-bookworm as builder
 
 COPY Cargo.lock /src/
 COPY Cargo.toml /src/
