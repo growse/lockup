@@ -10,7 +10,7 @@
     },
     "query": "INSERT INTO things (url) values (?)"
   },
-  "f3511dc8bfd5816aad7575143e3d8a4c72fc13b982021e42933beef8daf50a99": {
+  "80224df2dc073796d666a117e02c036b0f561f29b3e1497ae1a265791bc2cafc": {
     "describe": {
       "columns": [
         {
@@ -27,9 +27,15 @@
           "name": "added",
           "ordinal": 2,
           "type_info": "Datetime"
+        },
+        {
+          "name": "type_: Type",
+          "ordinal": 3,
+          "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false
@@ -38,6 +44,6 @@
         "Right": 0
       }
     },
-    "query": "SELECT things.id, url, added FROM things "
+    "query": "SELECT things.id, url, added,type as \"type_: Type\" FROM things "
   }
 }
