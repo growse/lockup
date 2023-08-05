@@ -1,3 +1,37 @@
 {
-  "db": "SQLite"
+  "db": "SQLite",
+  "235172003de3329d92c906968225e62c4631762b194d2ec7695cfd317f2ae2e1": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "INSERT INTO things (url) values (?)"
+  },
+  "ffab90666d7c44a7f54e78c6adc4357e5b4975d05f4e80dcccf708f09446aa05": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "url",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        true,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT id,url FROM things"
+  }
 }

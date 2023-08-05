@@ -25,7 +25,7 @@ fn index() -> Json<String> {
 
 #[get("/things")]
 async fn list(mut db: Connection<ThingsDb>) -> Result<Json<Vec<i64>>> {
-    let ids = sqlx::query!("SELECT id FROM things")
+    let ids = sqlx::query!("SELECT id,url FROM things")
         .fetch(&mut *db)
         .map_ok(|record| record.id)
         .try_collect::<Vec<_>>()
