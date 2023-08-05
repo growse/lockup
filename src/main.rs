@@ -4,13 +4,13 @@ extern crate rocket;
 use rocket::fairing::AdHoc;
 use rocket::futures::TryStreamExt;
 use rocket::serde::{json::Json, Deserialize, Serialize};
-use rocket::{fairing, Build, Rocket};
+use rocket::{fairing, Build, Rocket, Request};
 use rocket_db_pools::{sqlx, Connection, Database};
-
-use rocket::http::Status;
-use rocket::response::status::Created;
+use rocket::response::status::{BadRequest, Created};
 use std::result;
 use std::time::SystemTime;
+use rocket::response::Responder;
+use crate::AddThingError::DatabaseError;
 
 type Result<T, E = rocket::response::Debug<sqlx::Error>> = result::Result<T, E>;
 
@@ -36,12 +36,25 @@ async fn list(mut db: Connection<ThingsDb>) -> Result<Json<Vec<i64>>> {
     Ok(Json(ids))
 }
 
+#[derive(Responder)]
+enum AddThingError {
+    #[response(status = 400)]
+    NotAValidURL(String),
+    #[response(status = 500)]
+    DatabaseError(String),
+}
+
 #[post("/things", data = "<url>")]
-async fn add_thing(mut db: Connection<ThingsDb>, url: &str) -> Result<Created<&str>> {
-    sqlx::query!("INSERT INTO things (url) values (?)", url)
-        .execute(&mut *db)
-        .await?;
-    Ok(Created::new("/things").body(url))
+async fn add_thing(mut db: Connection<ThingsDb>, url: &str) -> result::Result<Created<&str>, AddThingError> {
+    let parsed_url = url::Url::parse(url);
+    if parsed_url.is_ok() {
+        sqlx::query!("INSERT INTO things (url) values (?)",url)
+            .execute(&mut *db)
+            .await.map_err(|e| DatabaseError("database error".to_string()))?;
+        Ok(Created::new("/things").body("Added".as_ref()))
+    } else {
+        Err(AddThingError::NotAValidURL( format!("Not a URL: {}",url.to_string())))
+    }
 }
 
 #[launch]
