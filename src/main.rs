@@ -4,9 +4,9 @@ extern crate rocket;
 use rocket::fairing::AdHoc;
 use rocket::futures::TryStreamExt;
 use rocket::serde::{json::Json, Deserialize, Serialize};
-use rocket::{fairing, Build, Rocket, Request};
+use rocket::{fairing, Build, Rocket};
 use rocket_db_pools::{sqlx, Connection, Database};
-use rocket::response::status::{BadRequest, Created};
+use rocket::response::status::{Created};
 use std::result;
 use std::time::SystemTime;
 use rocket::response::Responder;
@@ -50,7 +50,7 @@ async fn add_thing(mut db: Connection<ThingsDb>, url: &str) -> result::Result<Cr
     if parsed_url.is_ok() {
         sqlx::query!("INSERT INTO things (url) values (?)",url)
             .execute(&mut *db)
-            .await.map_err(|e| DatabaseError("database error".to_string()))?;
+            .await.map_err(|e| DatabaseError(format!("database error: {}",e).to_string()))?;
         Ok(Created::new("/things").body("Added".as_ref()))
     } else {
         Err(AddThingError::NotAValidURL( format!("Not a URL: {}",url.to_string())))
