@@ -2,7 +2,7 @@
 extern crate rocket;
 
 use crate::AddThingError::DatabaseError;
-use chrono::{NaiveDateTime};
+use chrono::NaiveDateTime;
 use rocket::fairing::AdHoc;
 use rocket::futures::TryStreamExt;
 use rocket::response::status::Created;
@@ -25,7 +25,7 @@ struct Thing {
     pub url: String,
     pub added: NaiveDateTime,
     // pub tags: Vec<Tag>,
-     type_: Type,
+    type_: Type,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -35,7 +35,7 @@ struct Tag {
     pub tag: String,
 }
 
-#[derive(Debug, Clone,sqlx::Type,Serialize,Deserialize)]
+#[derive(Debug, Clone, sqlx::Type, Serialize, Deserialize)]
 #[sqlx(rename_all = "lowercase")]
 enum Type {
     Article,
@@ -43,7 +43,7 @@ enum Type {
     Podcast,
     RSS,
     File,
- }
+}
 
 #[get("/")]
 fn index() -> Json<String> {
@@ -52,10 +52,13 @@ fn index() -> Json<String> {
 
 #[get("/things")]
 async fn list(mut db: Connection<ThingsDb>) -> Result<Json<Vec<Thing>>> {
-    let things = sqlx::query_as!(Thing, r#"SELECT things.id, url, added,type as "type_: Type" FROM things "#)
-        .fetch(&mut *db)
-        .try_collect::<Vec<_>>()
-        .await?;
+    let things = sqlx::query_as!(
+        Thing,
+        r#"SELECT things.id, url, added,type as "type_: Type" FROM things "#
+    )
+    .fetch(&mut *db)
+    .try_collect::<Vec<_>>()
+    .await?;
 
     Ok(Json(things))
 }
