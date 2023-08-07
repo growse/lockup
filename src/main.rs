@@ -4,12 +4,14 @@ extern crate rocket;
 use crate::AddThingError::DatabaseError;
 use chrono::NaiveDateTime;
 use rocket::fairing::AdHoc;
+use rocket::form::Form;
 use rocket::futures::TryStreamExt;
-use rocket::response::status::Created;
+use rocket::response::status::{Created, NoContent};
 use rocket::response::Responder;
-use rocket::serde::{json::Json, Deserialize, Serialize};
+use rocket::serde::{Deserialize, Serialize};
 use rocket::{fairing, Build, Rocket};
 use rocket_db_pools::{sqlx, Connection, Database};
+use rocket_dyn_templates::{context, Template};
 use std::result;
 
 type Result<T, E = rocket::response::Debug<sqlx::Error>> = result::Result<T, E>;
@@ -41,26 +43,20 @@ enum Type {
     Article,
     Youtube,
     Podcast,
-    RSS,
+    Rss,
     File,
 }
 
 #[get("/")]
-fn index() -> Json<String> {
-    Json("Hi there".to_string())
-}
-
-#[get("/things")]
-async fn list(mut db: Connection<ThingsDb>) -> Result<Json<Vec<Thing>>> {
+async fn index(mut db: Connection<ThingsDb>) -> Result<Template> {
     let things = sqlx::query_as!(
         Thing,
         r#"SELECT things.id, url, added,type as "type_: Type" FROM things "#
     )
-    .fetch(&mut *db)
-    .try_collect::<Vec<_>>()
-    .await?;
-
-    Ok(Json(things))
+        .fetch(&mut *db)
+        .try_collect::<Vec<_>>()
+        .await?;
+    Ok(Template::render("index", context! {things: things}))
 }
 
 #[derive(Responder)]
@@ -71,24 +67,40 @@ enum AddThingError {
     DatabaseError(String),
 }
 
-#[post("/things", data = "<url>")]
+#[derive(FromForm)]
+struct AddThingForm<'a> {
+    url: &'a str,
+}
+
+#[post("/things", data = "<add_thing_form>")]
 async fn add_thing(
     mut db: Connection<ThingsDb>,
-    url: &str,
-) -> result::Result<Created<&str>, AddThingError> {
-    let parsed_url = url::Url::parse(url);
+    add_thing_form: Form<AddThingForm<'_>>,
+) -> result::Result<Created<Template>, AddThingError> {
+    let parsed_url = url::Url::parse(add_thing_form.url);
     if parsed_url.is_ok() {
-        sqlx::query!("INSERT INTO things (url) values (?)", url)
+        sqlx::query!("INSERT INTO things (url) values (?)", add_thing_form.url)
             .execute(&mut *db)
             .await
-            .map_err(|e| DatabaseError(format!("database error: {}", e).to_string()))?;
-        Ok(Created::new("/things").body("Added".as_ref()))
+            .map_err(|e| DatabaseError(format!("database error: {}", e)))?;
+        Ok(Created::new("/things").body(Template::render(
+            "thingrow",
+            context! {url: add_thing_form.url, id:77},
+        )))
     } else {
         Err(AddThingError::NotAValidURL(format!(
             "Not a URL: {}",
-            url.to_string()
+            add_thing_form.url.to_string()
         )))
     }
+}
+
+#[delete("/things/<id>")]
+async fn delete_thing(mut db: Connection<ThingsDb>, id: i32) -> Result<NoContent> {
+    sqlx::query!("DELETE FROM things WHERE id=?", id)
+        .execute(&mut *db)
+        .await?;
+    Ok(NoContent)
 }
 
 #[launch]
@@ -96,7 +108,8 @@ fn rocket() -> _ {
     rocket::build()
         .attach(ThingsDb::init())
         .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
-        .mount("/", routes![index, list, add_thing])
+        .attach(Template::fairing())
+        .mount("/", routes![index, add_thing, delete_thing])
 }
 
 async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {

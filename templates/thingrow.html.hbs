@@ -1,0 +1,7 @@
+<tr>
+    <td>{{this.url}}</td>
+    <td>
+        <button hx-delete="things/{{ this.id }}" hx-target="closest tr" hx-swap="outerHTML swap:1s">Delete
+        </button>
+    </td>
+</tr>
