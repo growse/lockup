@@ -4,17 +4,8 @@
     "config:base",
     ":disableRateLimiting",
     ":rebaseStalePrs",
-    ":disableDependencyDashboard"
-  ],
-  "assignees": ["growse"],
-  "packageRules": [
-    {
-      "matchDepTypes": ["devDependencies"],
-      "automerge": true
-    },
-    {
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-      "automerge": true
-    }
+    ":disableDependencyDashboard",
+    "github>growse/renovate-template",
+    "github>growse/renovate-template:automerge-minor-and-patch"
   ]
 }
