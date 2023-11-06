@@ -51,9 +51,9 @@ enum Type {
 async fn index(mut db: Connection<ThingsDb>) -> Result<Template> {
     let things = sqlx::query_as!(
         Thing,
-        r#"SELECT things.id, url, added,type as "type_: Type" FROM things "#
+        r#"SELECT things.id, url, added as "added: _", type as "type_: Type" FROM things "#
     )
-        .fetch(&mut *db)
+        .fetch(&mut **db)
         .try_collect::<Vec<_>>()
         .await?;
     Ok(Template::render("index", context! {things: things}))
@@ -80,7 +80,7 @@ async fn add_thing(
     let parsed_url = url::Url::parse(add_thing_form.url);
     if parsed_url.is_ok() {
         sqlx::query!("INSERT INTO things (url) values (?)", add_thing_form.url)
-            .execute(&mut *db)
+            .execute(&mut **db)
             .await
             .map_err(|e| DatabaseError(format!("database error: {}", e)))?;
         Ok(Created::new("/things").body(Template::render(
@@ -98,7 +98,7 @@ async fn add_thing(
 #[delete("/things/<id>")]
 async fn delete_thing(mut db: Connection<ThingsDb>, id: i32) -> Result<NoContent> {
     sqlx::query!("DELETE FROM things WHERE id=?", id)
-        .execute(&mut *db)
+        .execute(&mut **db)
         .await?;
     Ok(NoContent)
 }

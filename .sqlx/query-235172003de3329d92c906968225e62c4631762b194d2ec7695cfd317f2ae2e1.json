@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO things (url) values (?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "235172003de3329d92c906968225e62c4631762b194d2ec7695cfd317f2ae2e1"
+}
