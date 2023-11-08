@@ -2,18 +2,24 @@ FROM rust:1.73-bookworm as builder
 
 COPY Cargo.lock /build/
 COPY Cargo.toml /build/
-COPY .cargo /build/
+COPY .cargo/config.toml /build/.cargo/config.toml
 RUN mkdir /build/src
 RUN echo "fn main() {}" > /build/src/main.rs
 WORKDIR /build
 
-RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build --target x86_64-unknown-linux-gnu
+RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build
 
-COPY src /build/src
+COPY src/ /build/src/
+COPY .sqlx /build/.sqlx/
+COPY migrations /build/migrations/
 
-RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build --target x86_64-unknown-linux-gnu
+RUN rm -rf /build/target
+RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build
 
-FROM alpine:latest
+FROM scratch
 
-COPY --from=builder /build/./target/x86_64-unknown-linux-gnu/debug/lockup /lockup
+COPY --from=builder /build/target/x86_64-unknown-linux-gnu/debug/lockup /lockup
+COPY templates/ /templates/
+COPY Rocket.toml /Rocket.toml
+VOLUME /data
 CMD ["/lockup"]
