@@ -53,9 +53,9 @@ async fn index(mut db: Connection<ThingsDb>) -> Result<Template> {
         Thing,
         r#"SELECT things.id, url, added as "added: _", type as "type_: Type" FROM things "#
     )
-        .fetch(&mut **db)
-        .try_collect::<Vec<_>>()
-        .await?;
+    .fetch(&mut **db)
+    .try_collect::<Vec<_>>()
+    .await?;
     Ok(Template::render("index", context! {things: things}))
 }
 
@@ -103,13 +103,19 @@ async fn delete_thing(mut db: Connection<ThingsDb>, id: i32) -> Result<NoContent
     Ok(NoContent)
 }
 
+#[get("/healthz")]
+async fn healthz(mut db: Connection<ThingsDb>) -> Result<NoContent> {
+    sqlx::query("SELECT TIME()").execute(&mut **db).await?;
+    Ok(NoContent)
+}
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
         .attach(ThingsDb::init())
         .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
         .attach(Template::fairing())
-        .mount("/", routes![index, add_thing, delete_thing])
+        .mount("/", routes![index, healthz, add_thing, delete_thing])
 }
 
 async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
