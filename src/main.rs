@@ -90,7 +90,7 @@ async fn add_thing(
     } else {
         Err(AddThingError::NotAValidURL(format!(
             "Not a URL: {}",
-            add_thing_form.url.to_string()
+            add_thing_form.url
         )))
     }
 }
