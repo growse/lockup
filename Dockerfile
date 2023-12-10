@@ -1,3 +1,9 @@
+FROM node:20 as web
+
+RUN npm ci
+COPY web /app/web
+RUN npm run build
+
 FROM rust:1.74-bookworm as builder
 
 COPY Cargo.lock /build/
@@ -20,6 +26,7 @@ FROM scratch
 
 COPY --from=builder /build/target/x86_64-unknown-linux-gnu/debug/lockup /lockup
 COPY templates/ /templates/
+COPY --from=web /app/static /static
 COPY Rocket.toml /Rocket.toml
 VOLUME /data
 CMD ["/lockup"]

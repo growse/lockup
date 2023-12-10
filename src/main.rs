@@ -13,6 +13,7 @@ use rocket::{fairing, Build, Rocket};
 use rocket_db_pools::{sqlx, Connection, Database};
 use rocket_dyn_templates::{context, Template};
 use std::result;
+use rocket::fs::FileServer;
 
 type Result<T, E = rocket::response::Debug<sqlx::Error>> = result::Result<T, E>;
 
@@ -112,6 +113,7 @@ async fn healthz(mut db: Connection<ThingsDb>) -> Result<NoContent> {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
+        .mount("/static",FileServer::from("static"))
         .attach(ThingsDb::init())
         .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
         .attach(Template::fairing())

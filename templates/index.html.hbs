@@ -1,38 +1,38 @@
 <html>
 <head>
-    <title>lockup</title>
-    <script src="https://unpkg.com/htmx.org@1.9.4"></script>
+  <title>lockup</title>
+  <script src="static/bundle.js" type="application/javascript"></script>
 </head>
 <body>
 <h1>Lockup</h1>
-<p>Hi there</p>
+<p>Hi there!</p>
 <section>
-    <form>
-        <fieldset>
-            <label for="url"></label><input type="text" name="url" placeholder="url">
-            <button type="submit"
-                    hx-post="/things/"
-                    hx-target="#thingsbody"
-                    hx-swap="beforeend">Add
-            </button>
-        </fieldset>
-    </form>
+  <form>
+    <fieldset>
+      <label for="url"></label><input type="text" name="url" placeholder="url">
+      <button type="submit"
+              hx-post="/things/"
+              hx-target="#thingsbody"
+              hx-swap="beforeend">Add
+      </button>
+    </fieldset>
+  </form>
 </section>
 <section>
-    <h2>Things</h2>
-    <table id="things">
-        <thead>
-        <tr>
-            <th>URL</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody id="thingsbody">
-        {{# each things}}
-            {{> thingrow}}
-        {{/each}}
-        </tbody>
-    </table>
+  <h2>Things</h2>
+  <table id="things">
+    <thead>
+    <tr>
+      <th>URL</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody id="thingsbody">
+    {{# each things}}
+      {{> thingrow}}
+    {{/each}}
+    </tbody>
+  </table>
 </section>
 </body>
 </html>
