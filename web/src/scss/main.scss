@@ -1,7 +1,95 @@
 @use "reset.css";
 
+$background-color: #ec0;
+$secondary-color: #e94;
+$tertiary-color: #e63;
+$font-color: #333;
+$secondary-font-color: #333;
+
+@mixin button {
+  border: 1px solid $font-color;
+  background-color: $background-color;
+  padding: 0.5rem;
+  &:hover {
+    background-color: $secondary-color;
+  }
+  &:focus {
+    border-style: dashed;
+  }
+  &:active {
+    background-color: $tertiary-color;
+  }
+}
+
 body {
   font-family: sans-serif;
-  background: #222;
-  color: #ccc;
+  background: $background-color;
+  color: $font-color;
+
+  section#new {
+    margin: 1rem 0 0 0;
+
+    form {
+      fieldset {
+        padding: 0;
+        width: 100%;
+        display: flex;
+        gap: 0.5rem;
+        border: 0;
+
+        button {
+  @include button;
+        }
+
+        input[type=url] {
+          flex-grow: 2;
+          background-color: $background-color;
+          border: 1px solid $font-color;
+          padding: 0.5rem;
+          outline: none;
+
+          &:focus, &:active {
+            border: 1px solid $font-color;
+            background-color: $secondary-color;
+          }
+        }
+      }
+    }
+  }
+
+  section#things {
+    table {
+      border-collapse: collapse;
+      margin: 25px 0;
+      font-size: 0.9em;
+      width: 100%;
+
+      thead tr {
+        background-color: $secondary-color;
+        color: $secondary-font-color;
+        text-align: left;
+      }
+
+      td, th {
+        padding: 1rem 2rem;
+        button {
+          @include button;
+        }
+      }
+
+      tbody {
+        tr {
+          border-bottom: 1px solid $secondary-color;
+        }
+
+        tr:nth-of-type(even) {
+          background-color: $secondary-color;
+        }
+
+        tr:last-of-type {
+          border-bottom: 2px solid $font-color;
+        }
+      }
+    }
+  }
 }

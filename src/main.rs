@@ -2,10 +2,12 @@
 extern crate rocket;
 
 use crate::AddThingError::DatabaseError;
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, SecondsFormat, Utc};
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
+use rocket::fs::FileServer;
 use rocket::futures::TryStreamExt;
+use rocket::http::Status;
 use rocket::response::status::{Created, NoContent};
 use rocket::response::Responder;
 use rocket::serde::{Deserialize, Serialize};
@@ -13,7 +15,6 @@ use rocket::{fairing, Build, Rocket};
 use rocket_db_pools::{sqlx, Connection, Database};
 use rocket_dyn_templates::{context, Template};
 use std::result;
-use rocket::fs::FileServer;
 
 type Result<T, E = rocket::response::Debug<sqlx::Error>> = result::Result<T, E>;
 
@@ -86,7 +87,7 @@ async fn add_thing(
             .map_err(|e| DatabaseError(format!("database error: {}", e)))?;
         Ok(Created::new("/things").body(Template::render(
             "thingrow",
-            context! {url: add_thing_form.url, id:77},
+            context! {url: add_thing_form.url, added: Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true)},
         )))
     } else {
         Err(AddThingError::NotAValidURL(format!(
@@ -97,11 +98,11 @@ async fn add_thing(
 }
 
 #[delete("/things/<id>")]
-async fn delete_thing(mut db: Connection<ThingsDb>, id: i32) -> Result<NoContent> {
+async fn delete_thing(mut db: Connection<ThingsDb>, id: i32) -> Result<Status> {
     sqlx::query!("DELETE FROM things WHERE id=?", id)
         .execute(&mut **db)
         .await?;
-    Ok(NoContent)
+    Ok(Status::new(200))
 }
 
 #[get("/healthz")]
@@ -113,7 +114,7 @@ async fn healthz(mut db: Connection<ThingsDb>) -> Result<NoContent> {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/static",FileServer::from("static"))
+        .mount("/static", FileServer::from("static"))
         .attach(ThingsDb::init())
         .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
         .attach(Template::fairing())

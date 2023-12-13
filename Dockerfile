@@ -1,8 +1,9 @@
+# syntax=docker/dockerfile:1
 FROM node:20 as web
 
-RUN npm ci
 COPY web /app/web
-RUN npm run build
+WORKDIR /app/web/
+RUN --mount=type=cache,target=/app/web/.npm npm ci --cache .npm --prefer-offline && npm run build
 
 FROM rust:1.74-bookworm as builder
 
@@ -20,11 +21,11 @@ COPY .sqlx /build/.sqlx/
 COPY migrations /build/migrations/
 
 RUN rm -rf /build/target
-RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build
+RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build --release
 
 FROM scratch
 
-COPY --from=builder /build/target/x86_64-unknown-linux-gnu/debug/lockup /lockup
+COPY --from=builder /build/target/x86_64-unknown-linux-gnu/release/lockup /lockup
 COPY templates/ /templates/
 COPY --from=web /app/static /static
 COPY Rocket.toml /Rocket.toml
