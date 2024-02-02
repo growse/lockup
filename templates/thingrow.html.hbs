@@ -1,8 +1,12 @@
 <tr>
     <td><a href="{{this.url}}">{{this.url}}</a></td>
-    <td><time datetime="{{this.added}}">{{this.added}}</time></td>
+    <td>{{this.tags}}</td>
     <td>
-        <button hx-delete="things/{{ this.id }}" hx-confirm="rellay?" hx-target="closest tr" hx-swap="outerHTML swap">Delete
+        <time datetime="{{this.added}}">{{this.added}}</time>
+    </td>
+    <td>
+        <button hx-delete="things/{{ this.id }}" hx-confirm="rellay?" hx-target="closest tr" hx-swap="outerHTML swap">
+            Delete
         </button>
     </td>
 </tr>

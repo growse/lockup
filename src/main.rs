@@ -87,7 +87,7 @@ async fn add_thing(
             .map_err(|e| DatabaseError(format!("database error: {}", e)))?;
         Ok(Created::new("/things").body(Template::render(
             "thingrow",
-            context! {url: add_thing_form.url, added: Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true)},
+            context! {url: add_thing_form.url, tags: "", added: Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true)},
         )))
     } else {
         Err(AddThingError::NotAValidURL(format!(
