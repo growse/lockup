@@ -5,7 +5,7 @@ COPY web /app/web
 WORKDIR /app/web/
 RUN --mount=type=cache,target=/app/web/.npm npm ci --cache .npm --prefer-offline && npm run build
 
-FROM rust:1.75-bookworm as builder
+FROM rust:1.76-bookworm as builder
 
 COPY Cargo.lock /build/
 COPY Cargo.toml /build/
