@@ -3,5 +3,3 @@ address = "0.0.0.0"
 
 [default.databases.thingsdb]
 url = "sqlite://data/lockup.sqlite"
-
-
